@@ -43,12 +43,18 @@ class NoteConfig {
 }
 
 function formatDate(date, format) {
+  console.log(`Input date: ${date}`);
+  console.log(`Input format: ${format}`);
+
   try {
     // Helper function to pad single digit numbers with a leading zero
-    const padZero = (number) =>
-      number < 10 ? "0" + number : number.toString();
+    const padZero = (number) => {
+      const strNum = number.toString();
+      return strNum.length === 1 ? "0" + strNum : strNum;
+    };
 
     const replacements = {
+      "%A": date.getDay() === 0 ? 7 : date.getDay(),
       "%d": padZero(date.getDate()),
       "%m": padZero(date.getMonth() + 1),
       "%Y": date.getFullYear(),
@@ -60,9 +66,12 @@ function formatDate(date, format) {
 
     let formattedDate = format;
     for (const [specifier, replacement] of Object.entries(replacements)) {
-      formattedDate = formattedDate.replace(specifier, replacement);
+      console.log(`Trying to replace specifier: ${specifier}`);
+      formattedDate = formattedDate.split(specifier).join(replacement);
+      console.log(`Formatted date after replacing ${specifier}: ${formattedDate}`);
     }
 
+    console.log(`Final formatted date: ${formattedDate}`);
     return formattedDate;
   } catch (error) {
     console.error("Error formatting date:", error);
@@ -70,8 +79,12 @@ function formatDate(date, format) {
   }
 }
 
+
+
 // Generate a note name based on the provided template and target date
 function generateNoteName(template, targetDate) {
+  console.log(`Generating note name for template: ${template}`);
+  
   const weekDates = calculateWeekDates(targetDate);
   const monthDates = calculateMonthDates(targetDate);
   const yearDates = calculateYearDates(targetDate);
@@ -87,32 +100,34 @@ function generateNoteName(template, targetDate) {
     current_date: targetDate,
   };
 
-  let finalName = template;
-
   try {
     // Replace date expressions in the format {expression:%format}
-    const regex = /{(\w+):%(\w+)}/g;
+    const regex = /{([a-zA-Z_]+):([^}]+)}/g;
+    const matches = template.match(regex);
+    console.log(`Found matches:`, matches);
     return template.replace(regex, (_, expr, format) => {
-      switch (expr) {
-        case "current_date":
-          return formatDate(date, format);
-        default:
-          throw new Error(`Unsupported expression: ${expr}`);
+      console.log(`Matched expression: ${expr}, format: ${format}`);
+      if (variables.hasOwnProperty(expr)) {
+          return formatDate(variables[expr], format);
+      } else {
+          console.error(`Expression ${expr} not found in variables`);
+          return _;  // Return the original matched string if not found
       }
     });
   } catch (error) {
     console.error("Error generating note name:", error);
     new Notice("Error occurred while generating the note name.");
+    return template;  // Return the original template in case of error
   }
-  return finalName;
 }
+
 
 // Calculate the start and end dates of the week for a given date
 function calculateWeekDates(currentDate) {
   let start_date = new Date(currentDate);
-  start_date.setDate(start_date.getDate() - start_date.getDay());
+  start_date.setDate(start_date.getDate() - (start_date.getDay() || 7) + 1);  // Subtract days to reach Monday
   let end_date = new Date(start_date);
-  end_date.setDate(end_date.getDate() + 6);
+  end_date.setDate(end_date.getDate() + 6);  // Add 6 days to reach Sunday
   return { start_date, end_date };
 }
 
@@ -173,7 +188,9 @@ class AutoNoteSettingTab extends import_obsidian.PluginSettingTab {
 
       this.createPluginDescription(containerEl);
       this.createUsageInstructions(containerEl);
+      this.createSpecifierInstructions(containerEl);
       this.createAvailableVariables(containerEl);
+      this.createSpecifierExamples(containerEl);
       this.createTemplateFolderSetting(containerEl);
       this.createAutoCreateSetting(containerEl);
       this.createNoteConfigTable(containerEl);
@@ -206,6 +223,30 @@ class AutoNoteSettingTab extends import_obsidian.PluginSettingTab {
     });
   }
 
+  createSpecifierInstructions(containerEl) {
+    containerEl.createEl("h3", { text: "Specifier Information:" });
+    const specifierList = containerEl.createEl("ul");
+
+    // Details for each specifier
+    const specifiers = {
+        "%A": "Day of the week (1 represents Monday, 7 represents Sunday)",
+        "%d": "Day of the month (01-31)",
+        "%m": "Month (01-12)",
+        "%Y": "4-digit year (e.g., 2023)",
+        "%y": "2-digit year (e.g., 23 for 2023)",
+        "%H": "Hour of the day in 24-hour format (00-23)",
+        "%M": "Minute of the hour (00-59)",
+        "%S": "Second of the minute (00-59)"
+    };
+
+    // Create list elements for each specifier
+    for (const [specifier, description] of Object.entries(specifiers)) {
+        specifierList.createEl("li", {
+            text: `${specifier} - ${description}`
+        });
+    }
+  }
+
   createAvailableVariables(containerEl) {
     containerEl.createEl("h3", { text: "Available Variables:" });
     const variablesList = containerEl.createEl("ul");
@@ -231,6 +272,25 @@ class AutoNoteSettingTab extends import_obsidian.PluginSettingTab {
       text: "current_date: The date for which the note is being generated.",
     });
   }
+
+  createSpecifierExamples(containerEl) {
+    containerEl.createEl("h3", { text: "Specifier Examples:" });
+    const exampleList = containerEl.createEl("ul");
+
+    // Example usages
+    const examples = {
+        "%A.%m.%Y": "Day of the week followed by month and year (e.g., 1.08.2023 for 1st August 2023)",
+        "%H:%M:%S": "Time in HH:MM:SS format (e.g., 14:30:45 for 2:30:45 PM)",
+        "%d/%m/%y": "Date in DD/MM/YY format (e.g., 01/08/23 for 1st August 2023)"
+    };
+
+    // Create list elements for each example
+    for (const [format, description] of Object.entries(examples)) {
+        exampleList.createEl("li", {
+            text: `${format} - ${description}`
+        });
+    }
+}
 
   createTemplateFolderSetting(containerEl) {
     containerEl.createEl("h3", { text: "Template Folder Settings:" });
