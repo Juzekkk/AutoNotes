@@ -1,7 +1,7 @@
 {
   "id": "auto-notes",
   "name": "AutoNotes",
-  "version": "1.0",
+  "version": "0.1.1",
   "minAppVersion": "0.15.0",
   "description": "Customizable automatic note creation plugin",
   "author": "Juzekkk ",
