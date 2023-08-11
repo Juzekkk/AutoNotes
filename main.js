@@ -42,44 +42,72 @@ class NoteConfig {
   }
 }
 
+function generateWeeklyNoteNames(template, targetDate) {
+  const { start_date, end_date } = calculateWeekDates(targetDate);
+  const noteNames = [];
+
+  for (let currentDate = new Date(start_date); currentDate <= end_date; currentDate.setDate(currentDate.getDate() + 1)) {
+      if (template.includes("%W")) {
+          // Replace the %W specifier with the current iteration's date specifier
+          const dayTemplate = template.replace("%W", "");
+          const noteName = generateNoteName(dayTemplate, currentDate);
+          noteNames.push(noteName);
+      } else {
+          // If %W specifier isn't present, just generate the note name as usual
+          const noteName = generateNoteName(template, currentDate);
+          noteNames.push(noteName);
+      }
+  }
+
+  return noteNames;
+}
+
 function formatDate(date, format) {
   console.log(`Input date: ${date}`);
   console.log(`Input format: ${format}`);
 
   try {
-    // Helper function to pad single digit numbers with a leading zero
-    const padZero = (number) => {
-      const strNum = number.toString();
-      return strNum.length === 1 ? "0" + strNum : strNum;
-    };
+      // Helper function to pad single digit numbers with a leading zero
+      const padZero = (number) => {
+          const strNum = number.toString();
+          return strNum.length === 1 ? "0" + strNum : strNum;
+      };
 
-    const replacements = {
-      "%A": date.getDay() === 0 ? 7 : date.getDay(),
-      "%d": padZero(date.getDate()),
-      "%m": padZero(date.getMonth() + 1),
-      "%Y": date.getFullYear(),
-      "%y": date.getFullYear().toString().slice(-2),
-      "%H": padZero(date.getHours()),
-      "%M": padZero(date.getMinutes()),
-      "%S": padZero(date.getSeconds()),
-    };
+      const monthNamesEn = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      const monthNamesPl = ["Styczeń", "Luty", "Marzec", "Kwiecień", "Maj", "Czerwiec", "Lipiec", "Sierpień", "Wrzesień", "Październik", "Listopad", "Grudzień"];
+      const weekdayNamesEn = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+      const weekdayNamesPl = ["Niedziela", "Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota"];
+      
+      const replacements = {
+          "%a": date.getDay() === 0 ? "7" : date.getDay().toString(),
+          "%Aen": weekdayNamesEn[date.getDay()],
+          "%Apl": weekdayNamesPl[date.getDay() === 0 ? 6 : date.getDay()],
+          "%Ben": monthNamesEn[date.getMonth()],
+          "%Bpl": monthNamesPl[date.getMonth()],
+          "%w": date.getDay() === 0 ? "7" : date.getDay().toString(),
+          "%d": padZero(date.getDate()),
+          "%m": padZero(date.getMonth() + 1),
+          "%Y": date.getFullYear(),
+          "%y": date.getFullYear().toString().slice(-2),
+          "%H": padZero(date.getHours()),
+          "%M": padZero(date.getMinutes()),
+          "%S": padZero(date.getSeconds()),
+      };
 
-    let formattedDate = format;
-    for (const [specifier, replacement] of Object.entries(replacements)) {
-      console.log(`Trying to replace specifier: ${specifier}`);
-      formattedDate = formattedDate.split(specifier).join(replacement);
-      console.log(`Formatted date after replacing ${specifier}: ${formattedDate}`);
-    }
+      let formattedDate = format;
+      for (const [specifier, replacement] of Object.entries(replacements)) {
+          console.log(`Trying to replace specifier: ${specifier}`);
+          formattedDate = formattedDate.split(specifier).join(replacement);
+          console.log(`Formatted date after replacing ${specifier}: ${formattedDate}`);
+      }
 
-    console.log(`Final formatted date: ${formattedDate}`);
-    return formattedDate;
+      console.log(`Final formatted date: ${formattedDate}`);
+      return formattedDate;
   } catch (error) {
-    console.error("Error formatting date:", error);
-    new Notice("Error occurred while formatting the date.");
+      console.error("Error formatting date:", error);
+      new Notice("Error occurred while formatting the date.");
   }
 }
-
-
 
 // Generate a note name based on the provided template and target date
 function generateNoteName(template, targetDate) {
@@ -102,17 +130,17 @@ function generateNoteName(template, targetDate) {
 
   try {
     // Replace date expressions in the format {expression:%format}
-    const regex = /{([a-zA-Z_]+):([^}]+)}/g;
+    const regex = /{([a-zA-Z_]+(?:_[a-z]{2})?):([^}]+)}/g;
     const matches = template.match(regex);
     console.log(`Found matches:`, matches);
     return template.replace(regex, (_, expr, format) => {
-      console.log(`Matched expression: ${expr}, format: ${format}`);
-      if (variables.hasOwnProperty(expr)) {
-          return formatDate(variables[expr], format);
-      } else {
-          console.error(`Expression ${expr} not found in variables`);
-          return _;  // Return the original matched string if not found
-      }
+        console.log(`Matched expression: ${expr}, format: ${format}`);
+        if (variables.hasOwnProperty(expr)) {
+            return formatDate(variables[expr], format);
+        } else {
+            console.error(`Expression ${expr} not found in variables`);
+            return _;  // Return the original matched string if not found
+        }
     });
   } catch (error) {
     console.error("Error generating note name:", error);
@@ -543,39 +571,38 @@ var AutomaticNotes = class extends import_obsidian.Plugin {
 
   async createNoteWithConfig(config, targetDate) {
     try {
-      let basePath = generateNoteName(config.base_path, targetDate);
-      const fullBasePath = path.join(this.app.vault.adapter.basePath, basePath);
+        let basePath = generateNoteName(config.base_path, targetDate);
+        const fullBasePath = path.join(this.app.vault.adapter.basePath, basePath);
 
-      let noteFileName = `${generateNoteName(
-        config.note_name_template,
-        targetDate
-      )}.md`;
-      let noteFilePath = `${basePath}/${noteFileName}`;
-      let templatePath = `templates/${config.template_name}.md`;
+        let noteFileName = `${generateNoteName(
+            config.note_name_template,
+            targetDate
+        )}.md`;
+        let noteFilePath = `${basePath}/${noteFileName}`;
+        let templatePath = `templates/${config.template_name}.md`;
 
-      if (!fs.existsSync(fullBasePath)) {
-        fs.mkdirSync(fullBasePath, { recursive: true });
-      }
-      const file = this.app.vault.getAbstractFileByPath(noteFilePath);
-      if (!file) {
-        const fullTemplatePath = path.join(
-          this.app.vault.adapter.basePath,
-          templatePath
-        );
-        const fullNoteFilePath = path.join(
-          this.app.vault.adapter.basePath,
-          noteFilePath
-        );
-        fs.copyFileSync(fullTemplatePath, fullNoteFilePath);
-        new Notice(
-          `${
-            config.frequency.charAt(0).toUpperCase() + config.frequency.slice(1)
-          } note created: ${noteFileName}`
-        );
-      }
+        if (!fs.existsSync(fullBasePath)) {
+            fs.mkdirSync(fullBasePath, { recursive: true });
+        }
+        const file = this.app.vault.getAbstractFileByPath(noteFilePath);
+        if (!file) {
+            const fullTemplatePath = path.join(
+                this.app.vault.adapter.basePath,
+                templatePath
+            );
+            const fullNoteFilePath = path.join(
+                this.app.vault.adapter.basePath,
+                noteFilePath
+            );
+            fs.copyFileSync(fullTemplatePath, fullNoteFilePath);
+            new Notice(
+                `${config.frequency.charAt(0).toUpperCase() + config.frequency.slice(1)} note created: ${noteFileName}`
+            );
+        }
     } catch (error) {
-      console.error("Error in createNoteWithConfig method:", error);
-      new Notice("Error occurred while creating a note with config.");
+        console.error("Error in createNoteWithConfig method:", error);
+        new Notice("Error occurred while creating a note with config.");
     }
-  }
+}
+
 };
