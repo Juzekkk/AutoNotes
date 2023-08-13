@@ -46,20 +46,42 @@ function generateWeeklyNoteNames(template, targetDate) {
   const { start_date, end_date } = calculateWeekDates(targetDate);
   const noteNames = [];
 
-  for (let currentDate = new Date(start_date); currentDate <= end_date; currentDate.setDate(currentDate.getDate() + 1)) {
-      if (template.includes("%W")) {
-          // Replace the %W specifier with the current iteration's date specifier
-          const dayTemplate = template.replace("%W", "");
-          const noteName = generateNoteName(dayTemplate, currentDate);
-          noteNames.push(noteName);
-      } else {
-          // If %W specifier isn't present, just generate the note name as usual
-          const noteName = generateNoteName(template, currentDate);
-          noteNames.push(noteName);
-      }
+  for (
+    let currentDate = new Date(start_date);
+    currentDate <= end_date;
+    currentDate.setDate(currentDate.getDate() + 1)
+  ) {
+    if (template.includes("%W")) {
+      // Replace the %W specifier with the current iteration's date specifier
+      const dayTemplate = template.replace("%W", "");
+      const noteName = generateNoteName(dayTemplate, currentDate);
+      noteNames.push(noteName);
+    } else {
+      // If %W specifier isn't present, just generate the note name as usual
+      const noteName = generateNoteName(template, currentDate);
+      noteNames.push(noteName);
+    }
   }
 
   return noteNames;
+}
+
+function getNextWeekday(dayName, referenceDate = new Date()) {
+  const days = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
+  const targetDayIndex = days.indexOf(dayName);
+  let currentDate = new Date(referenceDate);
+  while (currentDate.getDay() !== targetDayIndex) {
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+  return currentDate;
 }
 
 function formatDate(date, format) {
@@ -67,52 +89,122 @@ function formatDate(date, format) {
   console.log(`Input format: ${format}`);
 
   try {
-      // Helper function to pad single digit numbers with a leading zero
-      const padZero = (number) => {
-          const strNum = number.toString();
-          return strNum.length === 1 ? "0" + strNum : strNum;
-      };
+    // Helper function to pad single digit numbers with a leading zero
 
-      const monthNamesEn = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-      const monthNamesPl = ["Styczeń", "Luty", "Marzec", "Kwiecień", "Maj", "Czerwiec", "Lipiec", "Sierpień", "Wrzesień", "Październik", "Listopad", "Grudzień"];
-      const weekdayNamesEn = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-      const weekdayNamesPl = ["Niedziela", "Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota"];
-      
-      const replacements = {
-          "%a": date.getDay() === 0 ? "7" : date.getDay().toString(),
-          "%Aen": weekdayNamesEn[date.getDay()],
-          "%Apl": weekdayNamesPl[date.getDay() === 0 ? 6 : date.getDay()],
-          "%Ben": monthNamesEn[date.getMonth()],
-          "%Bpl": monthNamesPl[date.getMonth()],
-          "%w": date.getDay() === 0 ? "7" : date.getDay().toString(),
-          "%d": padZero(date.getDate()),
-          "%m": padZero(date.getMonth() + 1),
-          "%Y": date.getFullYear(),
-          "%y": date.getFullYear().toString().slice(-2),
-          "%H": padZero(date.getHours()),
-          "%M": padZero(date.getMinutes()),
-          "%S": padZero(date.getSeconds()),
-      };
+    const testString =
+      "#1 - Poniedziałek - %E{getNextWeekday('Monday').toLocaleDateString()}";
+    const regex = /%E{([^}]+)}/g;
+    const match = regex.exec(testString);
 
-      let formattedDate = format;
-      for (const [specifier, replacement] of Object.entries(replacements)) {
-          console.log(`Trying to replace specifier: ${specifier}`);
-          formattedDate = formattedDate.split(specifier).join(replacement);
-          console.log(`Formatted date after replacing ${specifier}: ${formattedDate}`);
+    console.log("Matched string:", match[0]);
+    console.log("Captured code:", match[1]);
+
+    const codeSnippet = "getNextWeekday('Monday').toLocaleDateString()";
+    try {
+      const result = eval(codeSnippet);
+      console.log("Evaluated result:", result);
+    } catch (error) {
+      console.error("Error evaluating code:", error);
+    }
+
+    const padZero = (number) => {
+      const strNum = number.toString();
+      return strNum.length === 1 ? "0" + strNum : strNum;
+    };
+
+    format = format.replace(/%E{([^}]+)}/g, (_, code) => {
+      try {
+        return eval(code);
+      } catch (error) {
+        console.error("Error evaluating expression:", error);
+        return _;
       }
+    });
 
-      console.log(`Final formatted date: ${formattedDate}`);
-      return formattedDate;
+    const monthNamesEn = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ];
+    const monthNamesPl = [
+      "Styczeń",
+      "Luty",
+      "Marzec",
+      "Kwiecień",
+      "Maj",
+      "Czerwiec",
+      "Lipiec",
+      "Sierpień",
+      "Wrzesień",
+      "Październik",
+      "Listopad",
+      "Grudzień",
+    ];
+    const weekdayNamesEn = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
+    const weekdayNamesPl = [
+      "Niedziela",
+      "Poniedziałek",
+      "Wtorek",
+      "Środa",
+      "Czwartek",
+      "Piątek",
+      "Sobota",
+    ];
+
+    const replacements = {
+      "%a": date.getDay() === 0 ? "7" : date.getDay().toString(),
+      "%Aen": weekdayNamesEn[date.getDay()],
+      "%Apl": weekdayNamesPl[date.getDay() === 0 ? 6 : date.getDay()],
+      "%Ben": monthNamesEn[date.getMonth()],
+      "%Bpl": monthNamesPl[date.getMonth()],
+      "%w": date.getDay() === 0 ? "7" : date.getDay().toString(),
+      "%d": padZero(date.getDate()),
+      "%m": padZero(date.getMonth() + 1),
+      "%Y": date.getFullYear(),
+      "%y": date.getFullYear().toString().slice(-2),
+      "%H": padZero(date.getHours()),
+      "%M": padZero(date.getMinutes()),
+      "%S": padZero(date.getSeconds()),
+    };
+
+    let formattedDate = format;
+    for (const [specifier, replacement] of Object.entries(replacements)) {
+      console.log(`Trying to replace specifier: ${specifier}`);
+      formattedDate = formattedDate.split(specifier).join(replacement);
+      console.log(
+        `Formatted date after replacing ${specifier}: ${formattedDate}`
+      );
+    }
+
+    console.log(`Final formatted date: ${formattedDate}`);
+    return formattedDate;
   } catch (error) {
-      console.error("Error formatting date:", error);
-      new Notice("Error occurred while formatting the date.");
+    console.error("Error formatting date:", error);
+    new Notice("Error occurred while formatting the date.");
   }
 }
 
 // Generate a note name based on the provided template and target date
 function generateNoteName(template, targetDate) {
   console.log(`Generating note name for template: ${template}`);
-  
+
   const weekDates = calculateWeekDates(targetDate);
   const monthDates = calculateMonthDates(targetDate);
   const yearDates = calculateYearDates(targetDate);
@@ -129,34 +221,49 @@ function generateNoteName(template, targetDate) {
   };
 
   try {
+    // Process entire template for dynamic expressions
+    template = template.replace(/%E{([^}]+)}/g, (_, code) => {
+      try {
+        return eval(code);
+      } catch (error) {
+        console.error("Error evaluating expression:", error);
+        return _;
+      }
+    });
+
     // Replace date expressions in the format {expression:%format}
     const regex = /{([a-zA-Z_]+(?:_[a-z]{2})?):([^}]+)}/g;
     const matches = template.match(regex);
     console.log(`Found matches:`, matches);
     return template.replace(regex, (_, expr, format) => {
-        console.log(`Matched expression: ${expr}, format: ${format}`);
-        if (variables.hasOwnProperty(expr)) {
-            return formatDate(variables[expr], format);
-        } else {
-            console.error(`Expression ${expr} not found in variables`);
-            return _;  // Return the original matched string if not found
-        }
+      console.log(`Matched expression: ${expr}, format: ${format}`);
+      if (variables.hasOwnProperty(expr)) {
+        return formatDate(variables[expr], format);
+      } else {
+        console.error(`Expression ${expr} not found in variables`);
+        return _; // Return the original matched string if not found
+      }
     });
   } catch (error) {
     console.error("Error generating note name:", error);
     new Notice("Error occurred while generating the note name.");
-    return template;  // Return the original template in case of error
+    return template; // Return the original template in case of error
   }
 }
 
-
 // Calculate the start and end dates of the week for a given date
-function calculateWeekDates(currentDate) {
-  let start_date = new Date(currentDate);
-  start_date.setDate(start_date.getDate() - (start_date.getDay() || 7) + 1);  // Subtract days to reach Monday
-  let end_date = new Date(start_date);
-  end_date.setDate(end_date.getDate() + 6);  // Add 6 days to reach Sunday
-  return { start_date, end_date };
+function calculateWeekDates(date) {
+  const currentDate = date || new Date();
+  const dayOfWeek = currentDate.getDay() || 7; // Treat Sunday as day 7
+  const startOfWeek = new Date(currentDate);
+  startOfWeek.setDate(currentDate.getDate() - dayOfWeek + 1);
+  const endOfWeek = new Date(currentDate);
+  endOfWeek.setDate(currentDate.getDate() + 7 - dayOfWeek);
+
+  return {
+    start_date: startOfWeek,
+    end_date: endOfWeek,
+  };
 }
 
 // Calculate the start and end dates of the month for a given date
@@ -257,21 +364,21 @@ class AutoNoteSettingTab extends import_obsidian.PluginSettingTab {
 
     // Details for each specifier
     const specifiers = {
-        "%A": "Day of the week (1 represents Monday, 7 represents Sunday)",
-        "%d": "Day of the month (01-31)",
-        "%m": "Month (01-12)",
-        "%Y": "4-digit year (e.g., 2023)",
-        "%y": "2-digit year (e.g., 23 for 2023)",
-        "%H": "Hour of the day in 24-hour format (00-23)",
-        "%M": "Minute of the hour (00-59)",
-        "%S": "Second of the minute (00-59)"
+      "%A": "Day of the week (1 represents Monday, 7 represents Sunday)",
+      "%d": "Day of the month (01-31)",
+      "%m": "Month (01-12)",
+      "%Y": "4-digit year (e.g., 2023)",
+      "%y": "2-digit year (e.g., 23 for 2023)",
+      "%H": "Hour of the day in 24-hour format (00-23)",
+      "%M": "Minute of the hour (00-59)",
+      "%S": "Second of the minute (00-59)",
     };
 
     // Create list elements for each specifier
     for (const [specifier, description] of Object.entries(specifiers)) {
-        specifierList.createEl("li", {
-            text: `${specifier} - ${description}`
-        });
+      specifierList.createEl("li", {
+        text: `${specifier} - ${description}`,
+      });
     }
   }
 
@@ -307,18 +414,20 @@ class AutoNoteSettingTab extends import_obsidian.PluginSettingTab {
 
     // Example usages
     const examples = {
-        "%A.%m.%Y": "Day of the week followed by month and year (e.g., 1.08.2023 for 1st August 2023)",
-        "%H:%M:%S": "Time in HH:MM:SS format (e.g., 14:30:45 for 2:30:45 PM)",
-        "%d/%m/%y": "Date in DD/MM/YY format (e.g., 01/08/23 for 1st August 2023)"
+      "%A.%m.%Y":
+        "Day of the week followed by month and year (e.g., 1.08.2023 for 1st August 2023)",
+      "%H:%M:%S": "Time in HH:MM:SS format (e.g., 14:30:45 for 2:30:45 PM)",
+      "%d/%m/%y":
+        "Date in DD/MM/YY format (e.g., 01/08/23 for 1st August 2023)",
     };
 
     // Create list elements for each example
     for (const [format, description] of Object.entries(examples)) {
-        exampleList.createEl("li", {
-            text: `${format} - ${description}`
-        });
+      exampleList.createEl("li", {
+        text: `${format} - ${description}`,
+      });
     }
-}
+  }
 
   createTemplateFolderSetting(containerEl) {
     containerEl.createEl("h3", { text: "Template Folder Settings:" });
@@ -571,38 +680,39 @@ var AutomaticNotes = class extends import_obsidian.Plugin {
 
   async createNoteWithConfig(config, targetDate) {
     try {
-        let basePath = generateNoteName(config.base_path, targetDate);
-        const fullBasePath = path.join(this.app.vault.adapter.basePath, basePath);
+      let basePath = generateNoteName(config.base_path, targetDate);
+      const fullBasePath = path.join(this.app.vault.adapter.basePath, basePath);
 
-        let noteFileName = `${generateNoteName(
-            config.note_name_template,
-            targetDate
-        )}.md`;
-        let noteFilePath = `${basePath}/${noteFileName}`;
-        let templatePath = `templates/${config.template_name}.md`;
+      let noteFileName = `${generateNoteName(
+        config.note_name_template,
+        targetDate
+      )}.md`;
+      let noteFilePath = `${basePath}/${noteFileName}`;
+      let templatePath = `templates/${config.template_name}.md`;
 
-        if (!fs.existsSync(fullBasePath)) {
-            fs.mkdirSync(fullBasePath, { recursive: true });
-        }
-        const file = this.app.vault.getAbstractFileByPath(noteFilePath);
-        if (!file) {
-            const fullTemplatePath = path.join(
-                this.app.vault.adapter.basePath,
-                templatePath
-            );
-            const fullNoteFilePath = path.join(
-                this.app.vault.adapter.basePath,
-                noteFilePath
-            );
-            fs.copyFileSync(fullTemplatePath, fullNoteFilePath);
-            new Notice(
-                `${config.frequency.charAt(0).toUpperCase() + config.frequency.slice(1)} note created: ${noteFileName}`
-            );
-        }
+      if (!fs.existsSync(fullBasePath)) {
+        fs.mkdirSync(fullBasePath, { recursive: true });
+      }
+      const file = this.app.vault.getAbstractFileByPath(noteFilePath);
+      if (!file) {
+        const fullTemplatePath = path.join(
+          this.app.vault.adapter.basePath,
+          templatePath
+        );
+        const fullNoteFilePath = path.join(
+          this.app.vault.adapter.basePath,
+          noteFilePath
+        );
+        fs.copyFileSync(fullTemplatePath, fullNoteFilePath);
+        new Notice(
+          `${
+            config.frequency.charAt(0).toUpperCase() + config.frequency.slice(1)
+          } note created: ${noteFileName}`
+        );
+      }
     } catch (error) {
-        console.error("Error in createNoteWithConfig method:", error);
-        new Notice("Error occurred while creating a note with config.");
+      console.error("Error in createNoteWithConfig method:", error);
+      new Notice("Error occurred while creating a note with config.");
     }
-}
-
+  }
 };

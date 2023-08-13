@@ -1,0 +1,48 @@
+{
+  "templateFolderPath": "templates",
+  "noteConfigs": [
+    {
+      "note_name_template": "#1 - Poniedziałek - {week_start_date:%d.%m.%Y}",
+      "template_name": "Day",
+      "base_path": "{current_date:%Y}/{current_date:%m - %Bpl}/{week_start_date:%d.%m.%Y} - {week_end_date:%d.%m.%Y}",
+      "frequency": "weekly"
+    },
+    {
+      "note_name_template": "#2 - Wtorek - {week_start_date:%E{const date = new Date(variables.week_start_date); date.setDate(date.getDate() + 1); date.toLocaleDateString('pl-PL')}}",
+      "template_name": "Day",
+      "base_path": "{current_date:%Y}/{current_date:%m - %Bpl}/{week_start_date:%d.%m.%Y} - {week_end_date:%d.%m.%Y}",
+      "frequency": "weekly"
+    },
+    {
+      "note_name_template": "#3 - Środa - {week_start_date:%E{const date = new Date(variables.week_start_date); date.setDate(date.getDate() + 2); date.toLocaleDateString('pl-PL')}}",
+      "template_name": "Day",
+      "base_path": "{current_date:%Y}/{current_date:%m - %Bpl}/{week_start_date:%d.%m.%Y} - {week_end_date:%d.%m.%Y}",
+      "frequency": "weekly"
+    },
+    {
+      "note_name_template": "#4 - Czwartek - {week_start_date:%E{const date = new Date(variables.week_start_date); date.setDate(date.getDate() + 3); date.toLocaleDateString('pl-PL')}}",
+      "template_name": "Day",
+      "base_path": "{current_date:%Y}/{current_date:%m - %Bpl}/{week_start_date:%d.%m.%Y} - {week_end_date:%d.%m.%Y}",
+      "frequency": "weekly"
+    },
+    {
+      "note_name_template": "#5 - Piątek - {week_start_date:%E{const date = new Date(variables.week_start_date); date.setDate(date.getDate() + 4); date.toLocaleDateString('pl-PL')}}",
+      "template_name": "Day",
+      "base_path": "{current_date:%Y}/{current_date:%m - %Bpl}/{week_start_date:%d.%m.%Y} - {week_end_date:%d.%m.%Y}",
+      "frequency": "weekly"
+    },
+    {
+      "note_name_template": "#6 - Sobota - {week_start_date:%E{const date = new Date(variables.week_start_date); date.setDate(date.getDate() + 5); date.toLocaleDateString('pl-PL')}}",
+      "template_name": "Saturday",
+      "base_path": "{current_date:%Y}/{current_date:%m - %Bpl}/{week_start_date:%d.%m.%Y} - {week_end_date:%d.%m.%Y}",
+      "frequency": "weekly"
+    },
+    {
+      "note_name_template": "#7 - Niedziela - {week_start_date:%E{const date = new Date(variables.week_start_date); date.setDate(date.getDate() + 6); date.toLocaleDateString('pl-PL')}}",
+      "template_name": "Sunday",
+      "base_path": "{current_date:%Y}/{current_date:%m - %Bpl}/{week_start_date:%d.%m.%Y} - {week_end_date:%d.%m.%Y}",
+      "frequency": "weekly"
+    }
+  ],
+  "autoCreateOnLoad": false
+}

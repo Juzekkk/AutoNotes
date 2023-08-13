@@ -22,6 +22,7 @@ The `AutoNotes` plugin for Obsidian streamlines the process of creating notes au
 2. Define your Note Configuration by setting its parameters.
 3. Use expressions like `{current_date:%m.%Y}` in your note names and paths to dynamically insert dates.
 4. Date formatting can be done using specifiers like `%d` (day), `%m` (month), and `%Y` (year).
+5. For more advanced needs, the %E{...} expression allows evaluation of any valid JavaScript code related to dates.
 
 ### Available Variables for Templates:
 
