@@ -1,4 +1,4 @@
-const { Plugin, Notice } = require("obsidian");
+const { Plugin, Notice, Modal } = require("obsidian");
 const fs = require("fs");
 const path = require("path");
 
@@ -89,24 +89,6 @@ function formatDate(date, format) {
   console.log(`Input format: ${format}`);
 
   try {
-    // Helper function to pad single digit numbers with a leading zero
-
-    const testString =
-      "#1 - Poniedziałek - %E{getNextWeekday('Monday').toLocaleDateString()}";
-    const regex = /%E{([^}]+)}/g;
-    const match = regex.exec(testString);
-
-    console.log("Matched string:", match[0]);
-    console.log("Captured code:", match[1]);
-
-    const codeSnippet = "getNextWeekday('Monday').toLocaleDateString()";
-    try {
-      const result = eval(codeSnippet);
-      console.log("Evaluated result:", result);
-    } catch (error) {
-      console.error("Error evaluating code:", error);
-    }
-
     const padZero = (number) => {
       const strNum = number.toString();
       return strNum.length === 1 ? "0" + strNum : strNum;
@@ -114,7 +96,8 @@ function formatDate(date, format) {
 
     format = format.replace(/%E{([^}]+)}/g, (_, code) => {
       try {
-        return eval(code);
+        const fn = new Function("variables", "return (" + code + ")");
+        return fn(variables);
       } catch (error) {
         console.error("Error evaluating expression:", error);
         return _;
@@ -299,6 +282,42 @@ const DEFAULT_SETTINGS = {
   templateFolderPath: "templates",
   noteConfigs: [],
 };
+
+class TextInputModal extends Modal {
+  constructor(app, currentValue, onSave) {
+    super(app);
+    this.currentValue = currentValue;
+    this.onSave = onSave;
+  }
+
+  onOpen() {
+    const { contentEl } = this;
+
+    contentEl.empty(); // Clear any existing content in the modal.
+
+    contentEl.createEl("h2", { text: "Edit Configuration" });
+
+    const textArea = contentEl.createEl("textarea");
+    textArea.value = this.currentValue;
+    textArea.setAttr(
+      "style",
+      "width: 100%; height: 50vh; resize: none; padding: 1em; box-sizing: border-box;"
+    );
+
+    // Handle modal click outside to save and close
+    this.modalEl.addEventListener("click", (e) => {
+      if (e.target === this.modalEl) {
+        this.onSave(textArea.value);
+        this.close();
+      }
+    });
+  }
+
+  onClose() {
+    // Save the content when the modal is closed
+    this.onSave(this.contentEl.querySelector("textarea").value);
+  }
+}
 
 class AutoNoteSettingTab extends import_obsidian.PluginSettingTab {
   constructor(app, plugin) {
@@ -494,17 +513,27 @@ class AutoNoteSettingTab extends import_obsidian.PluginSettingTab {
     this.plugin.settings.noteConfigs.forEach((config, index) => {
       const row = tbody.createEl("tr");
 
+      const createInputWithModal = (cellValue, updateFunc) => {
+        const input = document.createElement("input");
+        input.type = "text";
+        input.value = cellValue;
+        input.style.width = "100%";
+        input.addEventListener("click", () => {
+          new TextInputModal(this.plugin.app, input.value, (newValue) => {
+            input.value = newValue;
+            updateFunc({ target: input });
+          }).open();
+        });
+        return input;
+      };
+
       // Note Name Template Input
       const noteNameCell = row.createEl("td");
-      const noteNameInput = noteNameCell.createEl("input", {
-        type: "text",
-        value: config.note_name_template,
-        style: "width: 100%;",
-      });
-      noteNameInput.placeholder = "Enter Note Name...";
-      noteNameInput.addEventListener("input", (e) => {
-        config.note_name_template = e.target.value;
-      });
+      noteNameCell.appendChild(
+        createInputWithModal(config.note_name_template, (e) => {
+          config.note_name_template = e.target.value;
+        })
+      );
 
       // Frequency Dropdown
       const frequencyCell = row.createEl("td");
@@ -526,27 +555,19 @@ class AutoNoteSettingTab extends import_obsidian.PluginSettingTab {
 
       // Template Name Input
       const templateNameCell = row.createEl("td");
-      const templateNameInput = templateNameCell.createEl("input", {
-        type: "text",
-        value: config.template_name,
-        style: "width: 100%;",
-      });
-      templateNameInput.placeholder = "Enter Template Name...";
-      templateNameInput.addEventListener("input", (e) => {
-        config.template_name = e.target.value;
-      });
+      templateNameCell.appendChild(
+        createInputWithModal(config.template_name, (e) => {
+          config.template_name = e.target.value;
+        })
+      );
 
       // Base Path Input
       const basePathCell = row.createEl("td");
-      const basePathInput = basePathCell.createEl("input", {
-        type: "text",
-        value: config.base_path,
-        style: "width: 100%;",
-      });
-      basePathInput.placeholder = "Enter Destination Path...";
-      basePathInput.addEventListener("input", (e) => {
-        config.base_path = e.target.value;
-      });
+      basePathCell.appendChild(
+        createInputWithModal(config.base_path, (e) => {
+          config.base_path = e.target.value;
+        })
+      );
 
       // Delete Button
       const deleteButtonCell = row.createEl("td");
@@ -580,11 +601,14 @@ class AutoNoteSettingTab extends import_obsidian.PluginSettingTab {
   }
 
   createSaveSettingsButton(containerEl) {
-    const bottomContainer = containerEl.createEl("div", {
-      style: "display: flex; justify-content: flex-end; margin-top: 20px;",
-    });
+    const bottomContainer = containerEl.createEl("div");
+    bottomContainer.setAttr(
+      "style",
+      "display: flex; justify-content: flex-end; margin-top: 20px;"
+    );
     const saveButton = bottomContainer.createEl("button", {
       text: "Save Settings",
+      cls: "mod-cta",
     });
     saveButton.addEventListener("click", () => {
       this.plugin.saveSettings();

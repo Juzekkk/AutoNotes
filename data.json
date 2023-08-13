@@ -42,7 +42,49 @@
       "template_name": "Sunday",
       "base_path": "{current_date:%Y}/{current_date:%m - %Bpl}/{week_start_date:%d.%m.%Y} - {week_end_date:%d.%m.%Y}",
       "frequency": "weekly"
-    }
+    },
+      {
+        "note_name_template": "#1 - Poniedziałek - {week_start_date:%E{const nextDay = new Date(variables.week_start_date); nextDay.setDate(nextDay.getDate() + 7); nextDay.getDate() + '.' + (nextDay.getMonth() + 1).toString().padStart(2, '0') + '.' + nextDay.getFullYear();}}",
+        "template_name": "Day",
+        "base_path": "{current_date:%Y}/{current_date:%m - %Bpl}/{week_start_date:%E{const nextStart = new Date(variables.week_start_date); nextStart.setDate(nextStart.getDate() + 7); nextStart.getDate() + '.' + (nextStart.getMonth() + 1).toString().padStart(2, '0') + '.' + nextStart.getFullYear();}} - {week_end_date:%E{const nextEnd = new Date(variables.week_end_date); nextEnd.setDate(nextEnd.getDate() + 7); nextEnd.getDate() + '.' + (nextEnd.getMonth() + 1).toString().padStart(2, '0') + '.' + nextEnd.getFullYear();}}",
+        "frequency": "weekly"
+      },
+      {
+        "note_name_template": "#2 - Wtorek - {week_start_date:%E{const nextDay = new Date(variables.week_start_date); nextDay.setDate(nextDay.getDate() + 8); nextDay.getDate() + '.' + (nextDay.getMonth() + 1).toString().padStart(2, '0') + '.' + nextDay.getFullYear();}}",
+        "template_name": "Day",
+        "base_path": "{current_date:%Y}/{current_date:%m - %Bpl}/{week_start_date:%E{const nextStart = new Date(variables.week_start_date); nextStart.setDate(nextStart.getDate() + 7); nextStart.getDate() + '.' + (nextStart.getMonth() + 1).toString().padStart(2, '0') + '.' + nextStart.getFullYear();}} - {week_end_date:%E{const nextEnd = new Date(variables.week_end_date); nextEnd.setDate(nextEnd.getDate() + 7); nextEnd.getDate() + '.' + (nextEnd.getMonth() + 1).toString().padStart(2, '0') + '.' + nextEnd.getFullYear();}}",
+        "frequency": "weekly"
+      },
+      {
+        "note_name_template": "#3 - Środa - {week_start_date:%E{const nextDay = new Date(variables.week_start_date); nextDay.setDate(nextDay.getDate() + 9); nextDay.getDate() + '.' + (nextDay.getMonth() + 1).toString().padStart(2, '0') + '.' + nextDay.getFullYear();}}",
+        "template_name": "Day",
+        "base_path": "{current_date:%Y}/{current_date:%m - %Bpl}/{week_start_date:%E{const nextStart = new Date(variables.week_start_date); nextStart.setDate(nextStart.getDate() + 7); nextStart.getDate() + '.' + (nextStart.getMonth() + 1).toString().padStart(2, '0') + '.' + nextStart.getFullYear();}} - {week_end_date:%E{const nextEnd = new Date(variables.week_end_date); nextEnd.setDate(nextEnd.getDate() + 7); nextEnd.getDate() + '.' + (nextEnd.getMonth() + 1).toString().padStart(2, '0') + '.' + nextEnd.getFullYear();}}",
+        "frequency": "weekly"
+      },
+      {
+        "note_name_template": "#4 - Czwartek - {week_start_date:%E{const nextDay = new Date(variables.week_start_date); nextDay.setDate(nextDay.getDate() + 10); nextDay.getDate() + '.' + (nextDay.getMonth() + 1).toString().padStart(2, '0') + '.' + nextDay.getFullYear();}}",
+        "template_name": "Day",
+        "base_path": "{current_date:%Y}/{current_date:%m - %Bpl}/{week_start_date:%E{const nextStart = new Date(variables.week_start_date); nextStart.setDate(nextStart.getDate() + 7); nextStart.getDate() + '.' + (nextStart.getMonth() + 1).toString().padStart(2, '0') + '.' + nextStart.getFullYear();}} - {week_end_date:%E{const nextEnd = new Date(variables.week_end_date); nextEnd.setDate(nextEnd.getDate() + 7); nextEnd.getDate() + '.' + (nextEnd.getMonth() + 1).toString().padStart(2, '0') + '.' + nextEnd.getFullYear();}}",
+        "frequency": "weekly"
+      },
+      {
+        "note_name_template": "#5 - Piątek - {week_start_date:%E{const nextDay = new Date(variables.week_start_date); nextDay.setDate(nextDay.getDate() + 11); nextDay.getDate() + '.' + (nextDay.getMonth() + 1).toString().padStart(2, '0') + '.' + nextDay.getFullYear();}}",
+        "template_name": "Day",
+        "base_path": "{current_date:%Y}/{current_date:%m - %Bpl}/{week_start_date:%E{const nextStart = new Date(variables.week_start_date); nextStart.setDate(nextStart.getDate() + 7); nextStart.getDate() + '.' + (nextStart.getMonth() + 1).toString().padStart(2, '0') + '.' + nextStart.getFullYear();}} - {week_end_date:%E{const nextEnd = new Date(variables.week_end_date); nextEnd.setDate(nextEnd.getDate() + 7); nextEnd.getDate() + '.' + (nextEnd.getMonth() + 1).toString().padStart(2, '0') + '.' + nextEnd.getFullYear();}}",
+        "frequency": "weekly"
+      },
+      {
+        "note_name_template": "#6 - Sobota - {week_start_date:%E{const nextDay = new Date(variables.week_start_date); nextDay.setDate(nextDay.getDate() + 12); nextDay.getDate() + '.' + (nextDay.getMonth() + 1).toString().padStart(2, '0') + '.' + nextDay.getFullYear();}}",
+        "template_name": "Saturday",
+        "base_path": "{current_date:%Y}/{current_date:%m - %Bpl}/{week_start_date:%E{const nextStart = new Date(variables.week_start_date); nextStart.setDate(nextStart.getDate() + 7); nextStart.getDate() + '.' + (nextStart.getMonth() + 1).toString().padStart(2, '0') + '.' + nextStart.getFullYear();}} - {week_end_date:%E{const nextEnd = new Date(variables.week_end_date); nextEnd.setDate(nextEnd.getDate() + 7); nextEnd.getDate() + '.' + (nextEnd.getMonth() + 1).toString().padStart(2, '0') + '.' + nextEnd.getFullYear();}}",
+        "frequency": "weekly"
+      },
+      {
+        "note_name_template": "#7 - Niedziela - {week_start_date:%E{const nextDay = new Date(variables.week_start_date); nextDay.setDate(nextDay.getDate() + 13); nextDay.getDate() + '.' + (nextDay.getMonth() + 1).toString().padStart(2, '0') + '.' + nextDay.getFullYear();}}",
+        "template_name": "Sunday",
+        "base_path": "{current_date:%Y}/{current_date:%m - %Bpl}/{week_start_date:%E{const nextStart = new Date(variables.week_start_date); nextStart.setDate(nextStart.getDate() + 7); nextStart.getDate() + '.' + (nextStart.getMonth() + 1).toString().padStart(2, '0') + '.' + nextStart.getFullYear();}} - {week_end_date:%E{const nextEnd = new Date(variables.week_end_date); nextEnd.setDate(nextEnd.getDate() + 7); nextEnd.getDate() + '.' + (nextEnd.getMonth() + 1).toString().padStart(2, '0') + '.' + nextEnd.getFullYear();}}",
+        "frequency": "weekly"
+      }
   ],
   "autoCreateOnLoad": false
 }
