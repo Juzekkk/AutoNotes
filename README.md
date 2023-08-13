@@ -1,53 +1,58 @@
-# AutomaticNotes Plugin for Obsidian
+## Auto Note Creation Plugin for Obsidian
 
-The `AutoNotes` plugin for Obsidian streamlines the process of creating notes automatically based on user-defined configurations. You can define your note name templates, associate them with existing templates, and let the plugin generate the notes for you. This is particularly useful for creating regular notes like daily, weekly, or monthly summaries.
+### Description
 
-## Features
+The Auto Note Creation Plugin is designed to supercharge your Obsidian experience. It provides a robust framework for automating the creation of notes with dynamic naming based on user-defined configurations. By allowing dynamic expressions and integration with templates, this plugin offers a seamless way to maintain a structured and consistent note-taking routine.
 
-- Define note name templates with dynamic date expressions.
-- Associate note name templates with existing templates in your vault.
-- Automatically create notes on Obsidian load based on the plugin's configurations.
-- Specify the frequency (daily, weekly, monthly, yearly) for each note configuration.
-- Manually invoke the note creation process using a command within Obsidian.
+### Features
 
-## Installation
+- **Dynamic Note Naming**: Customize your note names with dynamic expressions, allowing for greater flexibility and organization.
+- **Advanced Date Formatting**: Seamlessly integrate various date formats into your note names and paths, ensuring your notes are always timely.
+- **Associative Templates**: Link your configurations with existing templates, ensuring that every new note follows a consistent structure.
+- **Automated Note Generation**: Set it and forget it! Let the plugin handle the note generation based on your predefined configurations.
 
-1. Navigate to the Community plugins in Obsidian.
-2. Search for "AutoNotes".
-3. Install the plugin.
+### How to Use
 
-## How to Use
+1. **Set Up Note Configuration**: Define the parameters for your note configuration to determine how notes will be generated.
+2. **Dynamic Date Expressions**: Use expressions like `{current_date:%m.%Y}` to add dates dynamically to your note names and paths.
+3. **Date Formatting with Specifiers**: Customize your dates with specifiers like `%d` for day, `%m` for month, and `%Y` for the year.
 
-1. Navigate to the plugin settings.
-2. Define your Note Configuration by setting its parameters.
-3. Use expressions like `{current_date:%m.%Y}` in your note names and paths to dynamically insert dates.
-4. Date formatting can be done using specifiers like `%d` (day), `%m` (month), and `%Y` (year).
-5. For more advanced needs, the %E{...} expression allows evaluation of any valid JavaScript code related to dates.
+### Expressions and Specifiers
 
-### Available Variables for Templates:
+#### Date Specifiers:
 
-- `week_start_date`: The start date of the week.
-- `week_end_date`: The end date of the week.
-- `month_start_date`: The start date of the month.
-- `month_end_date`: The end date of the month.
-- `year_start_date`: The start date of the year.
-- `year_end_date`: The end date of the year.
-- `current_date`: The date for which the note is being generated.
+- **%A**: Day of the week (1 represents Monday, 7 represents Sunday)
+- **%d**: Day of the month (01-31)
+- **%m**: Month (01-12)
+- **%Y**: 4-digit year (e.g., 2023)
+- **%y**: 2-digit year (e.g., 23 for 2023)
+- **%H**: Hour of the day in 24-hour format (00-23)
+- **%M**: Minute of the hour (00-59)
+- **%S**: Second of the minute (00-59)
 
-### Examples:
+#### Advanced Expressions:
 
-- `{current_date:%Y}` will be replaced by the current year (e.g., "2023").
-- `{current_date:%m.%Y}` will be replaced by the current month and year (e.g., "08.2023").
+- **%E{...}**: Execute JavaScript code within the `{...}` brackets to evaluate complex expressions. This is extremely powerful as it allows for dynamic calculations and custom logic to be embedded right within the naming templates.
 
-## Settings
+#### Available Variables for Expressions:
 
-- **Template Folder Path**: Specify the relative path to the folder within your Vault containing your templates.
-- **Automatically create missing notes on load**: Toggle this setting to enable or disable the automatic creation of missing notes based on your configurations when Obsidian loads.
-- **Note Configurations**: Define multiple note configurations specifying the note name template, frequency, template name, and destination path.
+- **week_start_date**: Start date of the current week.
+- **week_end_date**: End date of the current week.
+- **month_start_date**: Start date of the current month.
+- **month_end_date**: End date of the current month.
+- **year_start_date**: Start date of the current year.
+- **year_end_date**: End date of the current year.
+- **current_date**: Date for which the note is being generated.
 
-## Support
+### Examples
 
-If you encounter any issues or have feature requests, please open an issue on GitHub.
+- **%A.%m.%Y**: Represents the day of the week followed by the month and year, e.g., 1.08.2023 for 1st August 2023.
+- **%H:%M:%S**: Represents the time in HH:MM:SS format, e.g., 14:30:45 for 2:30:45 PM.
+- **%E{const date = new Date(); return date.getFullYear();}**: Evaluates the JavaScript code within the `%E{...}` brackets to return the current year.
+
+### Contributions
+
+For any bug reports, updates, or contributions, please refer to the main repository. We appreciate any feedback or enhancements to make this plugin even more powerful for the Obsidian community.
 
 ## License
 
