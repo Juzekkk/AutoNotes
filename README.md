@@ -2,7 +2,7 @@
 
 ### Description
 
-The Auto Note Creation Plugin is designed to supercharge your Obsidian experience. It provides a robust framework for automating the creation of notes with dynamic naming based on user-defined configurations. By allowing dynamic expressions and integration with templates, this plugin offers a seamless way to maintain a structured and consistent note-taking routine.
+The `AutoNotes` plugin for Obsidian streamlines the process of creating notes automatically based on user-defined configurations. You can define your note name templates, associate them with existing templates, and let the plugin generate the notes for you. This is particularly useful for creating regular notes like daily, weekly, or monthly summaries.
 
 ### Features
 
