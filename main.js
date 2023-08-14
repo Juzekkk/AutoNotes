@@ -24,252 +24,6 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) =>
   __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// -------------------------------------------------- //
-
-class NoteConfig {
-  constructor(
-    note_name_template,
-    template_name,
-    base_path,
-    frequency,
-    subfolder = null
-  ) {
-    this.note_name_template = note_name_template;
-    this.template_name = template_name;
-    this.base_path = base_path;
-    this.frequency = frequency;
-    this.subfolder = subfolder;
-  }
-}
-
-function generateWeeklyNoteNames(template, targetDate) {
-  const { start_date, end_date } = calculateWeekDates(targetDate);
-  const noteNames = [];
-
-  for (
-    let currentDate = new Date(start_date);
-    currentDate <= end_date;
-    currentDate.setDate(currentDate.getDate() + 1)
-  ) {
-    if (template.includes("%W")) {
-      // Replace the %W specifier with the current iteration's date specifier
-      const dayTemplate = template.replace("%W", "");
-      const noteName = generateNoteName(dayTemplate, currentDate);
-      noteNames.push(noteName);
-    } else {
-      // If %W specifier isn't present, just generate the note name as usual
-      const noteName = generateNoteName(template, currentDate);
-      noteNames.push(noteName);
-    }
-  }
-
-  return noteNames;
-}
-
-function getNextWeekday(dayName, referenceDate = new Date()) {
-  const days = [
-    "Sunday",
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-  ];
-  const targetDayIndex = days.indexOf(dayName);
-  let currentDate = new Date(referenceDate);
-  while (currentDate.getDay() !== targetDayIndex) {
-    currentDate.setDate(currentDate.getDate() + 1);
-  }
-  return currentDate;
-}
-
-function formatDate(date, format) {
-  console.log(`Input date: ${date}`);
-  console.log(`Input format: ${format}`);
-
-  try {
-    const padZero = (number) => {
-      const strNum = number.toString();
-      return strNum.length === 1 ? "0" + strNum : strNum;
-    };
-
-    format = format.replace(/%E{([^}]+)}/g, (_, code) => {
-      try {
-        const fn = new Function("variables", "return (" + code + ")");
-        return fn(variables);
-      } catch (error) {
-        console.error("Error evaluating expression:", error);
-        return _;
-      }
-    });
-
-    const monthNamesEn = [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December",
-    ];
-    const monthNamesPl = [
-      "Styczeń",
-      "Luty",
-      "Marzec",
-      "Kwiecień",
-      "Maj",
-      "Czerwiec",
-      "Lipiec",
-      "Sierpień",
-      "Wrzesień",
-      "Październik",
-      "Listopad",
-      "Grudzień",
-    ];
-    const weekdayNamesEn = [
-      "Sunday",
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
-    ];
-    const weekdayNamesPl = [
-      "Niedziela",
-      "Poniedziałek",
-      "Wtorek",
-      "Środa",
-      "Czwartek",
-      "Piątek",
-      "Sobota",
-    ];
-
-    const replacements = {
-      "%a": date.getDay() === 0 ? "7" : date.getDay().toString(),
-      "%Aen": weekdayNamesEn[date.getDay()],
-      "%Apl": weekdayNamesPl[date.getDay() === 0 ? 6 : date.getDay()],
-      "%Ben": monthNamesEn[date.getMonth()],
-      "%Bpl": monthNamesPl[date.getMonth()],
-      "%w": date.getDay() === 0 ? "7" : date.getDay().toString(),
-      "%d": padZero(date.getDate()),
-      "%m": padZero(date.getMonth() + 1),
-      "%Y": date.getFullYear(),
-      "%y": date.getFullYear().toString().slice(-2),
-      "%H": padZero(date.getHours()),
-      "%M": padZero(date.getMinutes()),
-      "%S": padZero(date.getSeconds()),
-    };
-
-    let formattedDate = format;
-    for (const [specifier, replacement] of Object.entries(replacements)) {
-      console.log(`Trying to replace specifier: ${specifier}`);
-      formattedDate = formattedDate.split(specifier).join(replacement);
-      console.log(
-        `Formatted date after replacing ${specifier}: ${formattedDate}`
-      );
-    }
-
-    console.log(`Final formatted date: ${formattedDate}`);
-    return formattedDate;
-  } catch (error) {
-    console.error("Error formatting date:", error);
-    new Notice("Error occurred while formatting the date.");
-  }
-}
-
-// Generate a note name based on the provided template and target date
-function generateNoteName(template, targetDate) {
-  console.log(`Generating note name for template: ${template}`);
-
-  const weekDates = calculateWeekDates(targetDate);
-  const monthDates = calculateMonthDates(targetDate);
-  const yearDates = calculateYearDates(targetDate);
-
-  // Mapping template variables to their corresponding date values
-  const variables = {
-    week_start_date: weekDates.start_date,
-    week_end_date: weekDates.end_date,
-    month_start_date: monthDates.start_date,
-    month_end_date: monthDates.end_date,
-    year_start_date: yearDates.start_date,
-    year_end_date: yearDates.end_date,
-    current_date: targetDate,
-  };
-
-  try {
-    // Process entire template for dynamic expressions
-    template = template.replace(/%E{([^}]+)}/g, (_, code) => {
-      try {
-        return eval(code);
-      } catch (error) {
-        console.error("Error evaluating expression:", error);
-        return _;
-      }
-    });
-
-    // Replace date expressions in the format {expression:%format}
-    const regex = /{([a-zA-Z_]+(?:_[a-z]{2})?):([^}]+)}/g;
-    const matches = template.match(regex);
-    console.log(`Found matches:`, matches);
-    return template.replace(regex, (_, expr, format) => {
-      console.log(`Matched expression: ${expr}, format: ${format}`);
-      if (variables.hasOwnProperty(expr)) {
-        return formatDate(variables[expr], format);
-      } else {
-        console.error(`Expression ${expr} not found in variables`);
-        return _; // Return the original matched string if not found
-      }
-    });
-  } catch (error) {
-    console.error("Error generating note name:", error);
-    new Notice("Error occurred while generating the note name.");
-    return template; // Return the original template in case of error
-  }
-}
-
-// Calculate the start and end dates of the week for a given date
-function calculateWeekDates(date) {
-  const currentDate = date || new Date();
-  const dayOfWeek = currentDate.getDay() || 7; // Treat Sunday as day 7
-  const startOfWeek = new Date(currentDate);
-  startOfWeek.setDate(currentDate.getDate() - dayOfWeek + 1);
-  const endOfWeek = new Date(currentDate);
-  endOfWeek.setDate(currentDate.getDate() + 7 - dayOfWeek);
-
-  return {
-    start_date: startOfWeek,
-    end_date: endOfWeek,
-  };
-}
-
-// Calculate the start and end dates of the month for a given date
-function calculateMonthDates(currentDate) {
-  let start_date = new Date(currentDate);
-  start_date.setDate(1);
-  let end_date = new Date(
-    start_date.getFullYear(),
-    start_date.getMonth() + 1,
-    0
-  );
-  return { start_date, end_date };
-}
-
-// Calculate the start and end dates of the year for a given date
-function calculateYearDates(currentDate) {
-  let date = new Date(currentDate);
-  let year = date.getFullYear();
-  let start_date = new Date(year, 0, 1);
-  let end_date = new Date(year, 11, 31);
-  return { start_date, end_date };
-}
-
 var main_exports = {};
 __export(main_exports, {
   default: () => AutomaticNotes,
@@ -283,46 +37,162 @@ const DEFAULT_SETTINGS = {
   noteConfigs: [],
 };
 
-class TextInputModal extends Modal {
-  constructor(app, currentValue, onSave) {
-    super(app);
-    this.currentValue = currentValue;
-    this.onSave = onSave;
+var AutomaticNotes = class extends import_obsidian.Plugin {
+  // Load the plugin settings from storage or use default values
+  async loadSettings() {
+    this.settings = await this.loadDataSafe(DEFAULT_SETTINGS);
   }
 
-  onOpen() {
-    const { contentEl } = this;
+  // Helper function to load data with error handling
+  async loadDataSafe(defaultSettings) {
+    try {
+      return Object.assign({}, defaultSettings, await this.loadData());
+    } catch (error) {
+      this.handleError("loading plugin settings", error);
+      return defaultSettings;
+    }
+  }
 
-    contentEl.empty(); // Clear any existing content in the modal.
+  // Save the current plugin settings to storage
+  async saveSettings() {
+    try {
+      await this.saveData(this.settings);
+      new Notice("Settings saved successfully!");
+    } catch (error) {
+      this.handleError("saving plugin settings", error);
+    }
+  }
 
-    contentEl.createEl("h2", { text: "Edit Configuration" });
-
-    const textArea = contentEl.createEl("textarea");
-    textArea.value = this.currentValue;
-    textArea.setAttr(
-      "style",
-      "width: 100%; height: 50vh; resize: none; padding: 1em; box-sizing: border-box;"
+  // General error handler
+  handleError(action, error) {
+    console.error(`Error during ${action}:`, error);
+    new Notice(
+      `Error occurred while ${action}. Check the console for details.`
     );
+  }
 
-    // Handle modal click outside to save and close
-    this.modalEl.addEventListener("click", (e) => {
-      if (e.target === this.modalEl) {
-        this.onSave(textArea.value);
-        this.close();
+  // This method handles the initial loading of the plugin
+  async onload() {
+    await this.initialLoad();
+    this.registerCommands();
+  }
+
+  async initialLoad() {
+    try {
+      await this.loadSettings();
+      if (this.settings.autoCreateOnLoad) {
+        const current_date = new Date();
+        for (let config of this.settings.noteConfigs) {
+          await this.createNoteWithConfig(config, current_date);
+        }
       }
+    } catch (error) {
+      this.handleError("the initial loading process", error);
+    }
+  }
+
+  registerCommands() {
+    try {
+      this.addCommand({
+        id: "add-missing-notes",
+        name: "Add missing notes",
+        callback: this.addMissingNotes.bind(this),
+      });
+
+      this.addSettingTab(new AutoNoteSettingTab(this.app, this));
+      this.registerClickEvent();
+      this.registerTimeInterval();
+    } catch (error) {
+      this.handleError("command registration or event handling", error);
+    }
+  }
+
+  async addMissingNotes() {
+    try {
+      const current_date = new Date();
+      for (let config of this.settings.noteConfigs) {
+        await this.createNoteWithConfig(config, current_date);
+      }
+    } catch (error) {
+      this.handleError("adding missing notes", error);
+    }
+  }
+
+  registerClickEvent() {
+    this.registerDomEvent(document, "click", (evt) => {
+      console.log("click", evt);
     });
   }
 
-  onClose() {
-    // Save the content when the modal is closed
-    this.onSave(this.contentEl.querySelector("textarea").value);
+  registerTimeInterval() {
+    this.registerInterval(
+      window.setInterval(() => console.log("setInterval"), 5 * 60 * 1e3)
+    );
   }
-}
+
+  async createNoteWithConfig(config, targetDate) {
+    try {
+      let basePath = generateNoteName(config.base_path, targetDate);
+      const fullBasePath = path.join(this.app.vault.adapter.basePath, basePath);
+
+      let noteFileName = `${generateNoteName(
+        config.note_name_template,
+        targetDate
+      )}.md`;
+      let noteFilePath = `${basePath}/${noteFileName}`;
+      let templatePath = `templates/${config.template_name}.md`;
+
+      if (!fs.existsSync(fullBasePath)) {
+        fs.mkdirSync(fullBasePath, { recursive: true });
+      }
+      const file = this.app.vault.getAbstractFileByPath(noteFilePath);
+      if (!file) {
+        this.copyTemplateToNoteFile(templatePath, noteFilePath);
+        new Notice(
+          `${
+            config.frequency.charAt(0).toUpperCase() + config.frequency.slice(1)
+          } note created: ${noteFileName}`
+        );
+      }
+    } catch (error) {
+      this.handleError("creating a note with config", error);
+    }
+  }
+
+  copyTemplateToNoteFile(templatePath, noteFilePath) {
+    const fullTemplatePath = path.join(
+      this.app.vault.adapter.basePath,
+      templatePath
+    );
+    const fullNoteFilePath = path.join(
+      this.app.vault.adapter.basePath,
+      noteFilePath
+    );
+    fs.copyFileSync(fullTemplatePath, fullNoteFilePath);
+  }
+};
 
 class AutoNoteSettingTab extends import_obsidian.PluginSettingTab {
   constructor(app, plugin) {
     super(app, plugin);
     this.plugin = plugin;
+  }
+
+  // Primary methods
+  display() {
+    const { containerEl } = this;
+    containerEl.empty();
+
+    this.createPluginDescription(containerEl);
+    this.createUsageInstructions(containerEl);
+    this.createSpecifierInstructions(containerEl);
+    this.createAvailableVariables(containerEl);
+    this.createSpecifierExamples(containerEl);
+    this.createTemplateFolderSetting(containerEl);
+    this.createAutoCreateSetting(containerEl);
+    this.createNoteConfigTable(containerEl);
+    this.createNewConfigurationButton(containerEl);
+    this.createSaveSettingsButton(containerEl);
   }
 
   unload() {
@@ -335,27 +205,7 @@ class AutoNoteSettingTab extends import_obsidian.PluginSettingTab {
     }
   }
 
-  display() {
-    try {
-      const { containerEl } = this;
-      containerEl.empty();
-
-      this.createPluginDescription(containerEl);
-      this.createUsageInstructions(containerEl);
-      this.createSpecifierInstructions(containerEl);
-      this.createAvailableVariables(containerEl);
-      this.createSpecifierExamples(containerEl);
-      this.createTemplateFolderSetting(containerEl);
-      this.createAutoCreateSetting(containerEl);
-      this.createNoteConfigTable(containerEl);
-      this.createNewConfigurationButton(containerEl);
-      this.createSaveSettingsButton(containerEl);
-    } catch (error) {
-      console.error("Error displaying settings:", error);
-      new Notice("Error occurred while displaying the settings.");
-    }
-  }
-
+  // Settings creation methods
   createPluginDescription(containerEl) {
     containerEl.createEl("h1", { text: "Auto Note Creation Plugin" });
     containerEl.createEl("p", {
@@ -365,87 +215,58 @@ class AutoNoteSettingTab extends import_obsidian.PluginSettingTab {
 
   createUsageInstructions(containerEl) {
     containerEl.createEl("h3", { text: "How to Use:" });
-    const usageList = containerEl.createEl("ol");
-    usageList.createEl("li", {
-      text: "Define a Note Configuration by setting its parameters.",
-    });
-    usageList.createEl("li", {
-      text: "Use expressions like {current_date:%m.%Y} in your note names and paths to dynamically insert dates.",
-    });
-    usageList.createEl("li", {
-      text: "Date formatting can be done using specifiers like %d (day), %m (month), and %Y (year).",
-    });
+    this.createList(
+      containerEl,
+      [
+        "Define a Note Configuration by setting its parameters.",
+        "Use expressions like {current_date:%m.%Y} in your note names and paths to dynamically insert dates.",
+        "Date formatting can be done using specifiers like %d (day), %m (month), and %Y (year).",
+      ],
+      "ol"
+    );
   }
 
   createSpecifierInstructions(containerEl) {
     containerEl.createEl("h3", { text: "Specifier Information:" });
-    const specifierList = containerEl.createEl("ul");
+    const specifiers = [
+      "%w:    Day of the week (1 represents Monday, 7 represents Sunday)",
+      "%Aen:  English name for the day of the week (e.g., Monday)",
+      "%Apl:  Polish name for the day of the week (e.g., Poniedziałek)",
+      "%Ben:  English name for the month (e.g., January)",
+      "%Bpl:  Polish name for the month (e.g., Styczeń)",
+      "%d:    Day of the month (01-31)",
+      "%m:    Month (01-12)",
+      "%Y:    4-digit year (e.g., 2023)",
+      "%y:    2-digit year (e.g., 23 for 2023)",
+      "%H:    Hour of the day in 24-hour format (00-23)",
+      "%M:    Minute of the hour (00-59)",
+      "%S:    Second of the minute (00-59)",
+    ];
 
-    // Details for each specifier
-    const specifiers = {
-      "%A": "Day of the week (1 represents Monday, 7 represents Sunday)",
-      "%d": "Day of the month (01-31)",
-      "%m": "Month (01-12)",
-      "%Y": "4-digit year (e.g., 2023)",
-      "%y": "2-digit year (e.g., 23 for 2023)",
-      "%H": "Hour of the day in 24-hour format (00-23)",
-      "%M": "Minute of the hour (00-59)",
-      "%S": "Second of the minute (00-59)",
-    };
-
-    // Create list elements for each specifier
-    for (const [specifier, description] of Object.entries(specifiers)) {
-      specifierList.createEl("li", {
-        text: `${specifier} - ${description}`,
-      });
-    }
+    this.createList(containerEl, specifiers);
   }
 
   createAvailableVariables(containerEl) {
     containerEl.createEl("h3", { text: "Available Variables:" });
-    const variablesList = containerEl.createEl("ul");
-    variablesList.createEl("li", {
-      text: "week_start_date: The start date of the week.",
-    });
-    variablesList.createEl("li", {
-      text: "week_end_date: The end date of the week.",
-    });
-    variablesList.createEl("li", {
-      text: "month_start_date: The start date of the month.",
-    });
-    variablesList.createEl("li", {
-      text: "month_end_date: The end date of the month.",
-    });
-    variablesList.createEl("li", {
-      text: "year_start_date: The start date of the year.",
-    });
-    variablesList.createEl("li", {
-      text: "year_end_date: The end date of the year.",
-    });
-    variablesList.createEl("li", {
-      text: "current_date: The date for which the note is being generated.",
-    });
+    this.createList(containerEl, [
+      "week_start_date:   The start date of the week.",
+      "week_end_date:     The end date of the week.",
+      "month_start_date:  The start date of the month.",
+      "month_end_date:    The end date of the month.",
+      "year_start_date:   The start date of the year.",
+      "year_end_date:     The end date of the year.",
+      "current_date:      The date for which the note is being generated.",
+    ]);
   }
 
   createSpecifierExamples(containerEl) {
     containerEl.createEl("h3", { text: "Specifier Examples:" });
-    const exampleList = containerEl.createEl("ul");
-
-    // Example usages
-    const examples = {
-      "%A.%m.%Y":
-        "Day of the week followed by month and year (e.g., 1.08.2023 for 1st August 2023)",
-      "%H:%M:%S": "Time in HH:MM:SS format (e.g., 14:30:45 for 2:30:45 PM)",
-      "%d/%m/%y":
-        "Date in DD/MM/YY format (e.g., 01/08/23 for 1st August 2023)",
-    };
-
-    // Create list elements for each example
-    for (const [format, description] of Object.entries(examples)) {
-      exampleList.createEl("li", {
-        text: `${format} - ${description}`,
-      });
-    }
+    const examples = [
+      "%A.%m.%Y: Day of the week followed by month and year (e.g., 1.08.2023 for 1st August 2023)",
+      "%H:%M:%S: Time in HH:MM:SS format (e.g., 14:30:45 for 2:30:45 PM)",
+      "%d/%m/%y: Date in DD/MM/YY format (e.g., 01/08/23 for 1st August 2023)",
+    ];
+    this.createList(containerEl, examples);
   }
 
   createTemplateFolderSetting(containerEl) {
@@ -483,13 +304,63 @@ class AutoNoteSettingTab extends import_obsidian.PluginSettingTab {
   }
 
   createNoteConfigTable(containerEl) {
-    // Header for Note Configurations
     containerEl.createEl("h3", { text: "Note Configurations:" });
+    const table = this.createTable(containerEl);
+    this.populateNoteConfigTable(table);
+  }
 
-    const table = containerEl.createEl("table", {
+  createNewConfigurationButton(containerEl) {
+    const addButtonContainer = containerEl.createEl("div", {
+      style: "margin-bottom: 10px;",
+    });
+    const addButton = addButtonContainer.createEl("button", {
+      text: "Add Configuration",
+    });
+    addButton.addEventListener("click", () => {
+      this.plugin.settings.noteConfigs.push({
+        note_name_template: "",
+        template_name: "",
+        base_path: "",
+        frequency: "daily",
+      });
+      this.display();
+    });
+  }
+
+  createSaveSettingsButton(containerEl) {
+    const bottomContainer = containerEl.createEl("div");
+    bottomContainer.setAttr(
+      "style",
+      "display: flex; justify-content: flex-end; margin-top: 20px;"
+    );
+    const saveButton = bottomContainer.createEl("button", {
+      text: "Save Settings",
+      cls: "mod-cta",
+    });
+    saveButton.addEventListener("click", () => {
+      this.plugin.saveSettings();
+    });
+  }
+
+  // Helper methods
+  createList(containerEl, items, type = "ul") {
+    const list = containerEl.createEl(type);
+    for (const [key, value] of Object.entries(items)) {
+      const text =
+        typeof key === "number" || typeof value !== "object"
+          ? value
+          : `${key} - ${value}`;
+      list.createEl("li", { text: text });
+    }
+  }
+
+  createTable(containerEl) {
+    return containerEl.createEl("table", {
       style: "width: 100%; border-collapse: collapse; margin-bottom: 10px;",
     });
+  }
 
+  populateNoteConfigTable(table) {
     // Table headers
     if (this.plugin.settings.noteConfigs.length > 0) {
       const thead = table.createEl("thead");
@@ -581,162 +452,201 @@ class AutoNoteSettingTab extends import_obsidian.PluginSettingTab {
       });
     });
   }
+}
 
-  createNewConfigurationButton(containerEl) {
-    const addButtonContainer = containerEl.createEl("div", {
-      style: "margin-bottom: 10px;",
-    });
-    const addButton = addButtonContainer.createEl("button", {
-      text: "Add Configuration",
-    });
-    addButton.addEventListener("click", () => {
-      this.plugin.settings.noteConfigs.push({
-        note_name_template: "",
-        template_name: "",
-        base_path: "",
-        frequency: "daily",
-      });
-      this.display();
-    });
-  }
-
-  createSaveSettingsButton(containerEl) {
-    const bottomContainer = containerEl.createEl("div");
-    bottomContainer.setAttr(
-      "style",
-      "display: flex; justify-content: flex-end; margin-top: 20px;"
-    );
-    const saveButton = bottomContainer.createEl("button", {
-      text: "Save Settings",
-      cls: "mod-cta",
-    });
-    saveButton.addEventListener("click", () => {
-      this.plugin.saveSettings();
-      new Notice("Settings saved successfully!");
-    });
+class NoteConfig {
+  constructor(
+    note_name_template,
+    template_name,
+    base_path,
+    frequency,
+    subfolder = null
+  ) {
+    this.note_name_template = note_name_template;
+    this.template_name = template_name;
+    this.base_path = base_path;
+    this.frequency = frequency;
+    this.subfolder = subfolder;
   }
 }
 
-var AutomaticNotes = class extends import_obsidian.Plugin {
-  // Load the plugin settings from storage or use default values
-  async loadSettings() {
-    try {
-      this.settings = Object.assign(
-        {},
-        DEFAULT_SETTINGS,
-        await this.loadData()
-      );
-    } catch (error) {
-      console.error("Error during loading plugin settings:", error);
-      new Notice(
-        "Error occurred while loading plugin settings. Check the console for details."
-      );
-    }
+class TextInputModal extends Modal {
+  constructor(app, currentValue, onSave) {
+    super(app);
+    this.currentValue = currentValue;
+    this.onSave = onSave;
   }
 
-  // Save the current plugin settings to storage
-  async saveSettings() {
-    try {
-      await this.saveData(this.settings);
-      new Notice("Settings saved successfully!");
-    } catch (error) {
-      console.error("Error during saving plugin settings:", error);
-      new Notice(
-        "Error occurred while saving plugin settings. Check the console for details."
-      );
-    }
-  }
+  onOpen() {
+    const { contentEl } = this;
 
-  // This method handles the initial loading of the plugin
-  async onload() {
-    // Load settings
-    try {
-      await this.loadSettings();
+    contentEl.empty(); // Clear any existing content in the modal.
 
-      if (this.settings.autoCreateOnLoad) {
-        const current_date = new Date();
-        for (let config of this.settings.noteConfigs) {
-          await this.createNoteWithConfig(config, current_date);
-        }
+    contentEl.createEl("h2", { text: "Edit Configuration" });
+
+    const textArea = contentEl.createEl("textarea");
+    textArea.value = this.currentValue;
+    textArea.setAttr(
+      "style",
+      "width: 100%; height: 50vh; resize: none; padding: 1em; box-sizing: border-box;"
+    );
+
+    // Handle modal click outside to save and close
+    this.modalEl.addEventListener("click", (e) => {
+      if (e.target === this.modalEl) {
+        this.onSave(textArea.value);
+        this.close();
       }
-    } catch (error) {
-      console.error("Error during the initial loading process:", error);
-      new Notice("Error occurred during the initial loading process.");
-    }
-
-    // Command to manually add missing notes
-    try {
-      this.addCommand({
-        id: "add-missing-notes",
-        name: "Add missing notes",
-        callback: async () => {
-          try {
-            const current_date = new Date();
-            for (let config of this.settings.noteConfigs) {
-              await this.createNoteWithConfig(config, current_date);
-            }
-          } catch (error) {
-            console.error("Error when adding missing notes:", error);
-            new Notice(
-              "Error occurred when adding missing notes. Check the console for details."
-            );
-          }
-        },
-      });
-
-      this.addSettingTab(new AutoNoteSettingTab(this.app, this));
-      this.registerDomEvent(document, "click", (evt) => {
-        console.log("click", evt);
-      });
-      this.registerInterval(
-        window.setInterval(() => console.log("setInterval"), 5 * 60 * 1e3)
-      );
-    } catch (error) {
-      console.error(
-        "Error during command registration or event handling:",
-        error
-      );
-      new Notice(
-        "Error occurred during command registration or event handling."
-      );
-    }
+    });
   }
 
-  async createNoteWithConfig(config, targetDate) {
-    try {
-      let basePath = generateNoteName(config.base_path, targetDate);
-      const fullBasePath = path.join(this.app.vault.adapter.basePath, basePath);
-
-      let noteFileName = `${generateNoteName(
-        config.note_name_template,
-        targetDate
-      )}.md`;
-      let noteFilePath = `${basePath}/${noteFileName}`;
-      let templatePath = `templates/${config.template_name}.md`;
-
-      if (!fs.existsSync(fullBasePath)) {
-        fs.mkdirSync(fullBasePath, { recursive: true });
-      }
-      const file = this.app.vault.getAbstractFileByPath(noteFilePath);
-      if (!file) {
-        const fullTemplatePath = path.join(
-          this.app.vault.adapter.basePath,
-          templatePath
-        );
-        const fullNoteFilePath = path.join(
-          this.app.vault.adapter.basePath,
-          noteFilePath
-        );
-        fs.copyFileSync(fullTemplatePath, fullNoteFilePath);
-        new Notice(
-          `${
-            config.frequency.charAt(0).toUpperCase() + config.frequency.slice(1)
-          } note created: ${noteFileName}`
-        );
-      }
-    } catch (error) {
-      console.error("Error in createNoteWithConfig method:", error);
-      new Notice("Error occurred while creating a note with config.");
-    }
+  onClose() {
+    // Save the content when the modal is closed
+    this.onSave(this.contentEl.querySelector("textarea").value);
   }
-};
+}
+
+// Generates a note name based on a template and target date.
+function generateNoteName(template, targetDate) {
+  const variables = {
+    week_start_date: calculateWeekDates(targetDate).start_date,
+    week_end_date: calculateWeekDates(targetDate).end_date,
+    month_start_date: calculateMonthDates(targetDate).start_date,
+    month_end_date: calculateMonthDates(targetDate).end_date,
+    year_start_date: calculateYearDates(targetDate).start_date,
+    year_end_date: calculateYearDates(targetDate).end_date,
+    current_date: targetDate,
+  };
+
+  template = template.replace(/%E{([^}]+)}/g, (_, code) => {
+    try {
+      return eval(code);
+    } catch (error) {
+      console.error("Error evaluating expression:", error);
+      return _;
+    }
+  });
+
+  return template.replace(
+    /{([a-zA-Z_]+(?:_[a-z]{2})?):([^}]+)}/g,
+    (_, expr, format) => {
+      if (variables.hasOwnProperty(expr)) {
+        return formatDate(variables[expr], format);
+      } else {
+        console.error(`Expression ${expr} not found in variables`);
+        return _;
+      }
+    }
+  );
+}
+
+// Formats a date according to the provided format.
+function formatDate(date, format) {
+  format = format.replace(/%E{([^}]+)}/g, (_, code) => {
+    try {
+      const fn = new Function("variables", "return (" + code + ")");
+      return fn(variables);
+    } catch (error) {
+      console.error("Error evaluating expression:", error);
+      return _;
+    }
+  });
+
+  const monthNamesEn = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+  const monthNamesPl = [
+    "Styczeń",
+    "Luty",
+    "Marzec",
+    "Kwiecień",
+    "Maj",
+    "Czerwiec",
+    "Lipiec",
+    "Sierpień",
+    "Wrzesień",
+    "Październik",
+    "Listopad",
+    "Grudzień",
+  ];
+  const weekdayNamesEn = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
+  const weekdayNamesPl = [
+    "Niedziela",
+    "Poniedziałek",
+    "Wtorek",
+    "Środa",
+    "Czwartek",
+    "Piątek",
+    "Sobota",
+  ];
+
+  const replacements = {
+    "%Aen": weekdayNamesEn[date.getDay()],
+    "%Apl": weekdayNamesPl[date.getDay() === 0 ? 6 : date.getDay()],
+    "%Ben": monthNamesEn[date.getMonth()],
+    "%Bpl": monthNamesPl[date.getMonth()],
+    "%w": date.getDay() === 0 ? "7" : date.getDay().toString(),
+    "%d": padZero(date.getDate()),
+    "%m": padZero(date.getMonth() + 1),
+    "%Y": date.getFullYear(),
+    "%y": date.getFullYear().toString().slice(-2),
+    "%H": padZero(date.getHours()),
+    "%M": padZero(date.getMinutes()),
+    "%S": padZero(date.getSeconds()),
+  };
+
+  for (const [specifier, replacement] of Object.entries(replacements)) {
+    format = format.split(specifier).join(replacement);
+  }
+
+  return format;
+}
+
+// Pads single-digit numbers with a leading zero.
+function padZero(number) {
+  return number.toString().length === 1 ? "0" + number : number.toString();
+}
+
+// Calculates the start and end dates of the week for a given date.
+function calculateWeekDates(date) {
+  const dayOfWeek = date.getDay() || 7;
+  const startOfWeek = new Date(date);
+  startOfWeek.setDate(date.getDate() - dayOfWeek + 1);
+  const endOfWeek = new Date(date);
+  endOfWeek.setDate(date.getDate() + 7 - dayOfWeek);
+
+  return { start_date: startOfWeek, end_date: endOfWeek };
+}
+
+// Calculates the start and end dates of the month for a given date.
+function calculateMonthDates(date) {
+  const start_date = new Date(date.getFullYear(), date.getMonth(), 1);
+  const end_date = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+  return { start_date, end_date };
+}
+
+// Calculates the start and end dates of the year for a given date.
+function calculateYearDates(date) {
+  const start_date = new Date(date.getFullYear(), 0, 1);
+  const end_date = new Date(date.getFullYear(), 11, 31);
+  return { start_date, end_date };
+}

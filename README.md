@@ -21,7 +21,11 @@ The `AutoNotes` plugin for Obsidian streamlines the process of creating notes au
 
 #### Date Specifiers:
 
-- **%A**: Day of the week (1 represents Monday, 7 represents Sunday)
+- **%w**: Day of the week (1 represents Monday, 7 represents Sunday)
+- **%Aen**: English name for the day of the week (e.g., Monday)
+- **%Apl**: Polish name for the day of the week (e.g., Poniedziałek)
+- **%Ben**: English name for the month (e.g., January)
+- **%Bpl**: Polish name for the month (e.g., Styczeń)
 - **%d**: Day of the month (01-31)
 - **%m**: Month (01-12)
 - **%Y**: 4-digit year (e.g., 2023)

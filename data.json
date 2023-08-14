@@ -84,7 +84,25 @@
       "template_name": "Sunday",
       "base_path": "{current_date:%Y}/{current_date:%m - %Bpl}/{week_start_date:%E{const nextStart = new Date(variables.week_start_date); nextStart.setDate(nextStart.getDate() + 7); nextStart.getDate() + '.' + (nextStart.getMonth() + 1).toString().padStart(2, '0') + '.' + nextStart.getFullYear();}} - {week_end_date:%E{const nextEnd = new Date(variables.week_end_date); nextEnd.setDate(nextEnd.getDate() + 7); nextEnd.getDate() + '.' + (nextEnd.getMonth() + 1).toString().padStart(2, '0') + '.' + nextEnd.getFullYear();}}",
       "frequency": "weekly"
-    }
+    },
+    {
+      "note_name_template": "Push ({week_start_date:%d.%m.%Y} - {week_end_date:%d.%m.%Y})",
+      "template_name": "Push",
+      "base_path": "{current_date:%Y}/{current_date:%m - %Bpl}/{week_start_date:%d.%m.%Y} - {week_end_date:%d.%m.%Y}/exercises",
+      "frequency": "weekly"
+    },
+    {
+      "note_name_template": "Pull ({week_start_date:%d.%m.%Y} - {week_end_date:%d.%m.%Y})",
+      "template_name": "Pull",
+      "base_path": "{current_date:%Y}/{current_date:%m - %Bpl}/{week_start_date:%d.%m.%Y} - {week_end_date:%d.%m.%Y}/exercises",
+      "frequency": "weekly"
+    },
+    {
+      "note_name_template": "Legs ({week_start_date:%d.%m.%Y} - {week_end_date:%d.%m.%Y})",
+      "template_name": "Legs",
+      "base_path": "{current_date:%Y}/{current_date:%m - %Bpl}/{week_start_date:%d.%m.%Y} - {week_end_date:%d.%m.%Y}/exercises",
+      "frequency": "weekly"
+    }    
   ],
   "autoCreateOnLoad": false
 }
